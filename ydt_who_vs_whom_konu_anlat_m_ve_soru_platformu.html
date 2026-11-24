@@ -1,0 +1,1210 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YDT Masterclass: Who vs. Whom | Konu Anlatımı &amp; Sınav Pratiği</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        who: {
+                            50: '#ecfdf5',
+                            100: '#d1fae5',
+                            500: '#10b981',
+                            600: '#059669',
+                            700: '#047857',
+                        },
+                        whom: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                        }
+                    }
+                }
+            }
+        };
+    </script>
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+            color: #0f172a;
+            overflow-x: hidden;
+        }
+
+        /* Smooth tab & card entrance animations */
+        .fade-in {
+            animation: fadeIn 0.35s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Hide horizontal scrollbar on mobile nav while keeping scrollability */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* Highlight blank pill inside Cloze Test passage */
+        .cloze-blank {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.1rem 0.55rem;
+            margin: 0 0.15rem;
+            border-radius: 0.5rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1.5px dashed #94a3b8;
+            background-color: #f1f5f9;
+            color: #334155;
+        }
+        .cloze-blank:hover {
+            border-color: #4f46e5;
+            background-color: #eef2ff;
+            color: #4338ca;
+        }
+        .cloze-blank.active-blank {
+            border-style: solid;
+            border-color: #4f46e5;
+            background-color: #e0e7ff;
+            color: #3730a3;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.18);
+        }
+        .cloze-blank.correct-blank {
+            border-style: solid;
+            border-color: #10b981;
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+        .cloze-blank.wrong-blank {
+            border-style: solid;
+            border-color: #f43f5e;
+            background-color: #ffe4e6;
+            color: #9f1239;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased selection:bg-indigo-100 selection:text-indigo-900">
+
+    <!-- Toast Notification Container (Replaces alert/confirm) -->
+    <div id="toast-box" class="fixed bottom-5 right-5 z-50 hidden max-w-sm bg-slate-900 text-white px-5 py-3.5 rounded-2xl shadow-2xl border border-slate-700 flex items-center gap-3 fade-in">
+        <i id="toast-icon" data-lucide="info" class="w-5 h-5 text-indigo-400 shrink-0"></i>
+        <p id="toast-message" class="text-sm font-medium leading-snug">Bildirim mesajı</p>
+    </div>
+
+    <!-- Sticky Header & Navigation -->
+    <header class="bg-white/90 backdrop-blur-md border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 py-3.5">
+            <div class="flex flex-wrap items-center justify-between gap-3">
+                <!-- Brand Title -->
+                <div class="flex items-center gap-3 cursor-pointer" onclick="switchTab('lesson')">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-indigo-600 text-white flex items-center justify-center shadow-md shrink-0">
+                        <i data-lucide="book-open-check" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-lg sm:text-xl font-extrabold text-slate-900 tracking-tight leading-none">
+                            <span class="text-emerald-600">Who</span> vs. <span class="text-indigo-600">Whom</span>
+                        </h1>
+                        <p class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mt-1">YDT Dilbilgisi &amp; Soru Strateji Rehberi</p>
+                    </div>
+                </div>
+
+                <!-- Global Score Tracker -->
+                <div class="flex items-center gap-2 sm:gap-3">
+                    <div class="flex items-center gap-2 bg-slate-100 border border-slate-200 px-3.5 py-2 rounded-xl">
+                        <i data-lucide="trophy" class="w-4 h-4 text-amber-500"></i>
+                        <span class="text-xs sm:text-sm font-bold text-slate-700">
+                            Skor: <span id="global-correct" class="text-emerald-600">0</span> / <span id="global-total" class="text-slate-500">24</span>
+                        </span>
+                    </div>
+                    <button onclick="resetAllProgress()" class="p-2.5 rounded-xl bg-white border border-slate-200 text-slate-500 hover:text-rose-600 hover:border-rose-200 hover:bg-rose-50 transition-colors" title="Tüm İlerlemeyi Sıfırla">
+                        <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Section Tabs (Horizontally scrollable on mobile) -->
+            <nav class="flex items-center gap-2 mt-3.5 overflow-x-auto no-scrollbar pb-1" aria-label="Bölüm Sekmeleri">
+                <button onclick="switchTab('lesson')" id="tab-btn-lesson" class="tab-nav-btn shrink-0 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2 bg-slate-900 text-white shadow-sm">
+                    <i data-lucide="graduation-cap" class="w-4 h-4"></i> Konu Anlatımı
+                </button>
+                <button onclick="switchTab('drill')" id="tab-btn-drill" class="tab-nav-btn shrink-0 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2 bg-slate-100 text-slate-600 hover:bg-slate-200">
+                    <i data-lucide="zap" class="w-4 h-4"></i> Hızlı Refleks <span class="text-[11px] px-1.5 py-0.5 rounded-md bg-white/80 text-slate-700" id="badge-drill">0/8</span>
+                </button>
+                <button onclick="switchTab('grammar')" id="tab-btn-grammar" class="tab-nav-btn shrink-0 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2 bg-slate-100 text-slate-600 hover:bg-slate-200">
+                    <i data-lucide="list-checks" class="w-4 h-4"></i> YDT Gramer <span class="text-[11px] px-1.5 py-0.5 rounded-md bg-white/80 text-slate-700" id="badge-grammar">0/6</span>
+                </button>
+                <button onclick="switchTab('cloze')" id="tab-btn-cloze" class="tab-nav-btn shrink-0 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2 bg-slate-100 text-slate-600 hover:bg-slate-200">
+                    <i data-lucide="file-text" class="w-4 h-4"></i> Cloze Test <span class="text-[11px] px-1.5 py-0.5 rounded-md bg-white/80 text-slate-700" id="badge-cloze">0/5</span>
+                </button>
+                <button onclick="switchTab('completion')" id="tab-btn-completion" class="tab-nav-btn shrink-0 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2 bg-slate-100 text-slate-600 hover:bg-slate-200">
+                    <i data-lucide="puzzle" class="w-4 h-4"></i> Sentence Completion <span class="text-[11px] px-1.5 py-0.5 rounded-md bg-white/80 text-slate-700" id="badge-completion">0/5</span>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content Wrapper -->
+    <main class="flex-grow max-w-6xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8">
+
+        <!-- ========================================================= -->
+        <!-- SECTION 1: KONU ANLATIMI & ALTIN KURALLAR                 -->
+        <!-- ========================================================= -->
+        <section id="section-lesson" class="tab-section fade-in space-y-8">
+            
+            <!-- Hero Banner -->
+            <div class="bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 rounded-3xl p-6 sm:p-10 text-white shadow-xl relative overflow-hidden">
+                <div class="absolute -top-12 -right-12 w-56 h-56 bg-emerald-500/20 rounded-full blur-3xl pointer-events-none"></div>
+                <div class="absolute -bottom-12 -left-12 w-56 h-56 bg-indigo-500/25 rounded-full blur-3xl pointer-events-none"></div>
+                <div class="relative z-10 max-w-3xl">
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 border border-white/15 text-emerald-300 text-xs font-bold uppercase tracking-wider mb-4">
+                        <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> ÖSYM / YDT Odaklı Anlatım
+                    </span>
+                    <h2 class="text-2xl sm:text-4xl font-black tracking-tight leading-tight mb-3">
+                        <span class="text-emerald-400">Who</span> mu, <span class="text-indigo-300">Whom</span> mu?<br>Tek Bakışta Farkı Yakala!
+                    </h2>
+                    <p class="text-slate-300 text-sm sm:text-base leading-relaxed mb-6">
+                        Günlük İngilizcede <strong class="text-white">who</strong> çoğu zaman <strong class="text-white">whom</strong> yerine kullanılabilse de, <strong>YDT / YDS / YÖKDİL</strong> gibi akademik sınavlarda bu ikisi arasındaki özne–nesne ayrımı ve <strong>edat (preposition)</strong> kuralları doğrudan soru belirleyicidir.
+                    </p>
+                    <div class="flex flex-wrap gap-3">
+                        <button onclick="switchTab('drill')" class="px-5 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm transition-colors flex items-center gap-2 shadow-lg">
+                            <i data-lucide="zap" class="w-4 h-4"></i> Hızlı Refleks Testine Geç
+                        </button>
+                        <button onclick="switchTab('grammar')" class="px-5 py-3 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/20 font-bold text-sm transition-colors flex items-center gap-2">
+                            <i data-lucide="list-checks" class="w-4 h-4"></i> YDT Sorularını Çöz
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Core Distinction Cards: WHO vs WHOM -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- WHO Card -->
+                <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+                    <div class="bg-emerald-50 border-b border-emerald-100 p-5 flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-11 h-11 rounded-2xl bg-emerald-600 text-white font-black text-lg flex items-center justify-center shadow-sm">
+                                W
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-extrabold text-emerald-900">WHO (Özne Zamiri)</h3>
+                                <p class="text-xs font-semibold text-emerald-700">İşi Yapan Kişi &bull; Subject Pronoun</p>
+                            </div>
+                        </div>
+                        <span class="px-3 py-1 rounded-full bg-emerald-600 text-white text-xs font-bold">He / She / They</span>
+                    </div>
+                    <div class="p-6 space-y-4 flex-grow">
+                        <p class="text-sm text-slate-600 leading-relaxed">
+                            Nitelediği kişi cümlecik içinde <strong>özne (işi yapan)</strong> konumundaysa kullanılır. Çoğu zaman boşluktan hemen sonra bir <strong>fiil (Verb)</strong> veya yardımcı fiil gelir.
+                        </p>
+                        <div class="bg-emerald-50/70 border border-emerald-200 rounded-2xl p-4 text-center">
+                            <p class="text-xs font-bold text-emerald-700 uppercase tracking-wider mb-1">Altın Formül</p>
+                            <p class="text-sm sm:text-base font-extrabold text-slate-800">
+                                İnsan + <span class="text-emerald-600 underline decoration-2">WHO</span> + <span class="bg-emerald-200/70 px-2 py-0.5 rounded-md">FİİL (Verb)</span>
+                            </p>
+                        </div>
+                        <div class="space-y-3 pt-1">
+                            <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-sm">
+                                <p class="font-semibold text-slate-800">The teacher <span class="text-emerald-600 font-extrabold">who</span> <span class="underline decoration-emerald-400">explained</span> the grammar rule was very patient.</p>
+                                <p class="text-xs text-slate-500 mt-1">Dilbilgisi kuralını <em>açıklayan</em> öğretmen... (<strong>She</strong> explained &rarr; Özne = <strong>who</strong>)</p>
+                            </div>
+                            <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-sm">
+                                <p class="font-semibold text-slate-800">Students <span class="text-emerald-600 font-extrabold">who</span> <span class="underline decoration-emerald-400">read</span> regularly improve their vocabulary quickly.</p>
+                                <p class="text-xs text-slate-500 mt-1">Düzenli <em>okuyan</em> öğrenciler... (<strong>They</strong> read &rarr; Özne = <strong>who</strong>)</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- WHOM Card -->
+                <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+                    <div class="bg-indigo-50 border-b border-indigo-100 p-5 flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-11 h-11 rounded-2xl bg-indigo-600 text-white font-black text-lg flex items-center justify-center shadow-sm">
+                                M
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-extrabold text-indigo-900">WHOM (Nesne Zamiri)</h3>
+                                <p class="text-xs font-semibold text-indigo-700">İşten Etkilenen Kişi &bull; Object Pronoun</p>
+                            </div>
+                        </div>
+                        <span class="px-3 py-1 rounded-full bg-indigo-600 text-white text-xs font-bold">Him / Her / Them</span>
+                    </div>
+                    <div class="p-6 space-y-4 flex-grow">
+                        <p class="text-sm text-slate-600 leading-relaxed">
+                            Nitelediği kişi cümlecik içinde <strong>nesne (işten etkilenen)</strong> konumundaysa veya hemen önünde bir <strong>edat (preposition)</strong> varsa kullanılır. Genellikle boşluktan sonra yeni bir <strong>Özne + Fiil</strong> gelir.
+                        </p>
+                        <div class="bg-indigo-50/70 border border-indigo-200 rounded-2xl p-4 text-center">
+                            <p class="text-xs font-bold text-indigo-700 uppercase tracking-wider mb-1">Altın Formül</p>
+                            <p class="text-sm sm:text-base font-extrabold text-slate-800">
+                                İnsan + (Edat) + <span class="text-indigo-600 underline decoration-2">WHOM</span> + <span class="bg-indigo-200/70 px-2 py-0.5 rounded-md">ÖZNE + FİİL</span>
+                            </p>
+                        </div>
+                        <div class="space-y-3 pt-1">
+                            <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-sm">
+                                <p class="font-semibold text-slate-800">The teacher <span class="text-indigo-600 font-extrabold">whom</span> <span class="underline decoration-indigo-400">we met</span> yesterday won an award.</p>
+                                <p class="text-xs text-slate-500 mt-1">Dün <em>tanıştığımız</em> öğretmen... (We met <strong>him/her</strong> &rarr; Nesne = <strong>whom</strong>)</p>
+                            </div>
+                            <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-sm">
+                                <p class="font-semibold text-slate-800">The colleague <span class="text-indigo-600 font-extrabold">with whom</span> <span class="underline decoration-indigo-400">I worked</span> moved to Ankara.</p>
+                                <p class="text-xs text-slate-500 mt-1"><em>Birlikte çalıştığım</em> meslektaş... (I worked with <strong>him/her</strong> &rarr; Edat + <strong>whom</strong>)</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Interactive Golden Trick: The "He / Him" Rule -->
+            <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 sm:p-8">
+                <div class="flex items-start gap-3 mb-5">
+                    <div class="p-2.5 bg-amber-100 text-amber-700 rounded-xl shrink-0">
+                        <i data-lucide="lightbulb" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-extrabold text-slate-900">10 Saniyede Çözüm: "He / Him" Kuralı</h3>
+                        <p class="text-sm text-slate-500 mt-0.5">Kafanız karıştığında cümleciği basit bir düz cümleye çevirip yerine <strong>he/they</strong> mi yoksa <strong>him/them</strong> mi geldiğine bakın. İkisinde de <strong>"M"</strong> harfi eşleşir!</p>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="p-5 rounded-2xl bg-emerald-50/60 border border-emerald-200 flex items-center justify-between gap-4">
+                        <div>
+                            <span class="text-xs font-bold text-emerald-700 uppercase">Test Sonucu: Özne</span>
+                            <p class="text-base font-bold text-slate-800 mt-1">"<u>He</u> / <u>She</u> / <u>They</u> called me."</p>
+                            <p class="text-xs text-slate-600 mt-1">Sonunda "m" yoksa cevap &rarr; <strong>WHO</strong></p>
+                        </div>
+                        <div class="text-2xl font-black text-emerald-600 bg-white px-4 py-2 rounded-xl border border-emerald-200 shadow-sm shrink-0">
+                            WHO
+                        </div>
+                    </div>
+                    <div class="p-5 rounded-2xl bg-indigo-50/60 border border-indigo-200 flex items-center justify-between gap-4">
+                        <div>
+                            <span class="text-xs font-bold text-indigo-700 uppercase">Test Sonucu: Nesne</span>
+                            <p class="text-base font-bold text-slate-800 mt-1">"I called hi<u>m</u> / the<u>m</u>."</p>
+                            <p class="text-xs text-slate-600 mt-1">Hi<strong>m</strong> / The<strong>m</strong> &rarr; Sonu <strong>M</strong> ile biter = <strong>WHOM</strong></p>
+                        </div>
+                        <div class="text-2xl font-black text-indigo-600 bg-white px-4 py-2 rounded-xl border border-indigo-200 shadow-sm shrink-0">
+                            WHO<span class="underline decoration-rose-500 decoration-2">M</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3 Critical YDT Traps -->
+            <div class="space-y-4">
+                <h3 class="text-xl font-extrabold text-slate-900 flex items-center gap-2">
+                    <i data-lucide="alert-triangle" class="w-5 h-5 text-rose-500"></i> YDT'de En Çok Çıkan 3 Kritik Kural &amp; Tuzak
+                </h3>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+                    <!-- Trap 1: Preposition + Whom -->
+                    <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm space-y-3">
+                        <div class="flex items-center justify-between">
+                            <span class="px-2.5 py-1 rounded-lg bg-rose-100 text-rose-700 text-xs font-extrabold uppercase">Kural #1 (Zorunlu!)</span>
+                            <i data-lucide="lock" class="w-4 h-4 text-rose-500"></i>
+                        </div>
+                        <h4 class="text-lg font-extrabold text-slate-900">Edat (Preposition) + WHOM</h4>
+                        <p class="text-sm text-slate-600 leading-relaxed">
+                            Bir edattan (<em>to, with, for, about, from, on, in, by</em>) <strong>hemen sonra</strong> insan nitelerken <strong>ASLA "who" veya "that" kullanılmaz!</strong> Mutlaka <strong>whom</strong> gelir.
+                        </p>
+                        <div class="space-y-2 pt-2 text-xs">
+                            <div class="p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 font-medium">
+                                <span class="font-bold text-emerald-700">✓ DOĞRU:</span> The mentor <strong>to whom</strong> I spoke...
+                            </div>
+                            <div class="p-2.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-900 font-medium">
+                                <span class="font-bold text-rose-700">✗ YANLIŞ:</span> The mentor <s class="decoration-rose-500">to who</s> / <s class="decoration-rose-500">to that</s> I spoke...
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Trap 2: Quantifier + of Whom -->
+                    <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm space-y-3">
+                        <div class="flex items-center justify-between">
+                            <span class="px-2.5 py-1 rounded-lg bg-indigo-100 text-indigo-700 text-xs font-extrabold uppercase">Kural #2 (YDT Favorisi)</span>
+                            <i data-lucide="layers" class="w-4 h-4 text-indigo-500"></i>
+                        </div>
+                        <h4 class="text-lg font-extrabold text-slate-900">Miktar İfadesi + of WHOM</h4>
+                        <p class="text-sm text-slate-600 leading-relaxed">
+                            Virgülden sonra gelen <em>most of, some of, all of, none of, both of, neither of, half of, many of</em> ifadelerinde <strong>of</strong> bir edat olduğu için devamında insan varsa <strong>whom</strong> gelir (devamında fiil gelse bile!).
+                        </p>
+                        <div class="space-y-2 pt-2 text-xs">
+                            <div class="p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 font-medium">
+                                <span class="font-bold text-emerald-700">✓ DOĞRU:</span> 50 doctors, <strong>most of whom</strong> agreed...
+                            </div>
+                            <div class="p-2.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-900 font-medium">
+                                <span class="font-bold text-rose-700">✗ YANLIŞ:</span> 50 doctors, <s class="decoration-rose-500">most of who</s> agreed...
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Trap 3: Interrupter Trap -->
+                    <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm space-y-3">
+                        <div class="flex items-center justify-between">
+                            <span class="px-2.5 py-1 rounded-lg bg-amber-100 text-amber-800 text-xs font-extrabold uppercase">Tuzak #3 (Sazan Avı!)</span>
+                            <i data-lucide="eye" class="w-4 h-4 text-amber-600"></i>
+                        </div>
+                        <h4 class="text-lg font-extrabold text-slate-900">Ara Cümle (Interrupter) Tuzağı</h4>
+                        <p class="text-sm text-slate-600 leading-relaxed">
+                            Boşluktan sonra <em>I think, they believe, she knows, we suppose</em> gibi bir "kanaat ifadesi" gelip ardından <strong>fiil</strong> devam ediyorsa, o ara ifadeyi parantez içine alıp atın! Geride fiil kalıyorsa cevap <strong>WHO</strong>'dur.
+                        </p>
+                        <div class="space-y-2 pt-2 text-xs">
+                            <div class="p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 font-medium">
+                                <span class="font-bold text-emerald-700">✓ DOĞRU:</span> The suspect <strong>who</strong> (I think) <u>stole</u> the car...
+                            </div>
+                            <div class="p-2.5 rounded-xl bg-slate-100 border border-slate-200 text-slate-700 font-medium">
+                                <em>Test:</em> "(I think) <strong>he</strong> stole the car" &rarr; Özne = <strong>WHO</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Summary Comparison Table -->
+            <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+                <div class="p-5 sm:p-6 border-b border-slate-100 flex items-center justify-between flex-wrap gap-2">
+                    <h3 class="text-lg font-extrabold text-slate-900 flex items-center gap-2">
+                        <i data-lucide="table-2" class="w-5 h-5 text-indigo-600"></i> Hızlı Özet Karşılaştırma Tablosu
+                    </h3>
+                    <span class="text-xs font-semibold text-slate-400">Sınav öncesi son tekrar kartı</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse text-sm">
+                        <thead>
+                            <tr class="bg-slate-50 border-b border-slate-200 text-slate-600 text-xs uppercase tracking-wider">
+                                <th class="p-4 font-bold">Özellik / Kullanım</th>
+                                <th class="p-4 font-bold text-emerald-700">WHO</th>
+                                <th class="p-4 font-bold text-indigo-700">WHOM</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            <tr class="hover:bg-slate-50/70">
+                                <td class="p-4 font-bold text-slate-800">Cümledeki Görevi</td>
+                                <td class="p-4 text-slate-600">Özne (Subject)</td>
+                                <td class="p-4 text-slate-600">Nesne (Object)</td>
+                            </tr>
+                            <tr class="hover:bg-slate-50/70">
+                                <td class="p-4 font-bold text-slate-800">Zamir Testi</td>
+                                <td class="p-4"><span class="px-2.5 py-1 rounded-md bg-emerald-100 text-emerald-800 font-bold text-xs">He / She / They</span></td>
+                                <td class="p-4"><span class="px-2.5 py-1 rounded-md bg-indigo-100 text-indigo-800 font-bold text-xs">Him / Her / Them</span></td>
+                            </tr>
+                            <tr class="hover:bg-slate-50/70">
+                                <td class="p-4 font-bold text-slate-800">Hemen Arkasından Ne Gelir?</td>
+                                <td class="p-4 text-slate-600">Genellikle <strong>Fiil (Verb)</strong></td>
+                                <td class="p-4 text-slate-600">Genellikle <strong>Özne + Fiil</strong> (<em>of whom</em> hariç)</td>
+                            </tr>
+                            <tr class="hover:bg-slate-50/70">
+                                <td class="p-4 font-bold text-slate-800">Edattan Hemen Sonra (to / with / for...)</td>
+                                <td class="p-4 text-rose-600 font-bold">✗ Kullanılamaz</td>
+                                <td class="p-4 text-emerald-600 font-bold">✓ Zorunlu (to whom, with whom)</td>
+                            </tr>
+                            <tr class="hover:bg-slate-50/70">
+                                <td class="p-4 font-bold text-slate-800">Miktar + of (most of / none of...)</td>
+                                <td class="p-4 text-rose-600 font-bold">✗ Kullanılamaz</td>
+                                <td class="p-4 text-emerald-600 font-bold">✓ Zorunlu (most of whom, all of whom)</td>
+                            </tr>
+                            <tr class="hover:bg-slate-50/70">
+                                <td class="p-4 font-bold text-slate-800">Soru Cümlesinde</td>
+                                <td class="p-4 text-slate-600"><em>Who wrote this book?</em> (Kim yazdı?)</td>
+                                <td class="p-4 text-slate-600"><em>To whom did you send the email?</em> (Kime gönderdin?)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- SECTION 2: HIZLI REFLEKS ANTRENMANI (WHO vs WHOM)         -->
+        <!-- ========================================================= -->
+        <section id="section-drill" class="tab-section hidden fade-in space-y-6">
+            <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <span class="text-xs font-extrabold uppercase tracking-wider text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-lg">Refleks Geliştirme</span>
+                    <h2 class="text-2xl font-extrabold text-slate-900 mt-2">Hızlı Antrenman: Who mu, Whom mu?</h2>
+                    <p class="text-sm text-slate-500 mt-1">8 soruluk bu mini testte "He/Him" testini ve edat kuralını uygulayarak refleks kazan.</p>
+                </div>
+                <button onclick="resetSection('drill')" class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm transition-colors flex items-center gap-2 self-start sm:self-center">
+                    <i data-lucide="refresh-cw" class="w-4 h-4"></i> Bölümü Sıfırla
+                </button>
+            </div>
+
+            <div id="drill-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Dynamically populated via JS -->
+            </div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- SECTION 3: YDT GRAMER SORULARI (6 SORU, A-E)              -->
+        <!-- ========================================================= -->
+        <section id="section-grammar" class="tab-section hidden fade-in space-y-6">
+            <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <span class="text-xs font-extrabold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-lg">ÖSYM YDT Formatı</span>
+                    <h2 class="text-2xl font-extrabold text-slate-900 mt-2">YDT Gramer Soruları (Relative Clauses)</h2>
+                    <p class="text-sm text-slate-500 mt-1">Edatlı yapılar, miktar ifadeleri ve ara cümle tuzaklarını ölçen 6 özgün YDT dilbilgisi sorusu.</p>
+                </div>
+                <button onclick="resetSection('grammar')" class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm transition-colors flex items-center gap-2 self-start sm:self-center">
+                    <i data-lucide="refresh-cw" class="w-4 h-4"></i> Bölümü Sıfırla
+                </button>
+            </div>
+
+            <div id="grammar-container" class="space-y-6">
+                <!-- Dynamically populated via JS -->
+            </div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- SECTION 4: YDT CLOZE TEST (1 METİN, 5 SORU)               -->
+        <!-- ========================================================= -->
+        <section id="section-cloze" class="tab-section hidden fade-in space-y-6">
+            <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <span class="text-xs font-extrabold uppercase tracking-wider text-purple-600 bg-purple-50 px-2.5 py-1 rounded-lg">YDT Cloze Test Pratiği</span>
+                    <h2 class="text-2xl font-extrabold text-slate-900 mt-2">Cloze Test: Renaissance Workshops</h2>
+                    <p class="text-sm text-slate-500 mt-1">Metindeki numaralı boşluklara tıklayarak veya aşağıdaki kartlardan şıkları seçerek tüm parçayı analiz edin.</p>
+                </div>
+                <button onclick="resetSection('cloze')" class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm transition-colors flex items-center gap-2 self-start sm:self-center">
+                    <i data-lucide="refresh-cw" class="w-4 h-4"></i> Cloze Testi Sıfırla
+                </button>
+            </div>
+
+            <!-- Academic Passage Card -->
+            <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 sm:p-8">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-4 mb-5">
+                    <div class="flex items-center gap-2">
+                        <i data-lucide="book-open" class="w-5 h-5 text-purple-600"></i>
+                        <h3 class="font-extrabold text-slate-800 text-base sm:text-lg">Okuma Parçası (Sorular 1–5)</h3>
+                    </div>
+                    <span class="text-xs font-semibold text-slate-400">Boşluğa tıklayarak soruya odaklanın</span>
+                </div>
+                <p id="cloze-passage-text" class="text-slate-700 text-base sm:text-[17px] leading-loose font-normal">
+                    During the Italian Renaissance, artistic excellence was rarely achieved in isolation. Young apprentices, many of
+                    <span class="cloze-blank" id="passage-blank-0" onclick="focusClozeQuestion(0)">(1) ____</span>
+                    entered workshops before the age of thirteen, learned their craft by observing seasoned masters every day. A master painter was not merely an employer, but a respected mentor
+                    <span class="cloze-blank" id="passage-blank-1" onclick="focusClozeQuestion(1)">(2) ____</span>
+                    the apprentices depended for both technical training and moral guidance. The most ambitious students were usually those
+                    <span class="cloze-blank" id="passage-blank-2" onclick="focusClozeQuestion(2)">(3) ____</span>
+                    demonstrated exceptional patience while grinding pigments and preparing wooden panels for years before ever touching a canvas. Historians have also uncovered letters written by patrons
+                    <span class="cloze-blank" id="passage-blank-3" onclick="focusClozeQuestion(3)">(4) ____</span>
+                    these masters frequently collaborated to design grand frescoes for cathedrals and palaces. Today, art historians still celebrate Renaissance pioneers
+                    <span class="cloze-blank" id="passage-blank-4" onclick="focusClozeQuestion(4)">(5) ____</span>
+                    critics widely regard as the true architects of modern visual perspective.
+                </p>
+            </div>
+
+            <!-- Cloze Questions Grid -->
+            <div id="cloze-container" class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <!-- Dynamically populated via JS -->
+            </div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- SECTION 5: YDT SENTENCE COMPLETION (5 SORU, A-E)          -->
+        <!-- ========================================================= -->
+        <section id="section-completion" class="tab-section hidden fade-in space-y-6">
+            <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <span class="text-xs font-extrabold uppercase tracking-wider text-amber-700 bg-amber-50 px-2.5 py-1 rounded-lg">Cümle Tamamlama</span>
+                    <h2 class="text-2xl font-extrabold text-slate-900 mt-2">YDT Sentence Completion Soruları</h2>
+                    <p class="text-sm text-slate-500 mt-1">Hem bağlaç/anlam uyumunu hem de <strong>who / whom / prep + whom</strong> gramer eleme stratejisini birleştiren 5 özgün soru.</p>
+                </div>
+                <button onclick="resetSection('completion')" class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm transition-colors flex items-center gap-2 self-start sm:self-center">
+                    <i data-lucide="refresh-cw" class="w-4 h-4"></i> Bölümü Sıfırla
+                </button>
+            </div>
+
+            <div id="completion-container" class="space-y-6">
+                <!-- Dynamically populated via JS -->
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 mt-12 py-6">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
+            <p class="font-medium">YDT Dilbilgisi Masterclass &bull; <strong>Who vs. Whom</strong> İnteraktif Çalışma Platformu</p>
+            <p>ÖSYM YDT sınav formatına uygun olarak hazırlanmıştır.</p>
+        </div>
+    </footer>
+
+    <!-- ========================================================= -->
+    <!-- JAVASCRIPT: DATA, STATE MANAGEMENT & INTERACTIVE ENGINE   -->
+    <!-- ========================================================= -->
+    <script>
+        // ==========================================
+        // 1. QUESTION DATABASES (100% YDT-AUTHENTIC)
+        // ==========================================
+
+        const drillQuestions = [
+            {
+                id: 'd1',
+                sentence: 'The scientist ____ discovered the new antibiotic won an international prize.',
+                answer: 'who',
+                hint: 'Test: "He/She discovered the antibiotic." Boşluktan sonra doğrudan fiil (discovered) geliyor &rarr; Özne = WHO.'
+            },
+            {
+                id: 'd2',
+                sentence: 'The candidate ____ the hiring committee interviewed yesterday has ten years of experience.',
+                answer: 'whom',
+                hint: 'Test: "The committee interviewed him/her." Boşluktan sonra yeni bir Özne + Fiil geliyor &rarr; Nesne = WHOM.'
+            },
+            {
+                id: 'd3',
+                sentence: 'The colleague with ____ I share my research lab is moving to Germany next month.',
+                answer: 'whom',
+                hint: 'Kural: Bir edattan (with) hemen sonra insan nitelerken ASLA "who" gelmez &rarr; Edat + WHOM.'
+            },
+            {
+                id: 'd4',
+                sentence: 'There were forty applicants, most of ____ held advanced degrees in linguistics.',
+                answer: 'whom',
+                hint: 'Kural: "most of" ifadesi "of" edatıyla bittiği için devamında fiil gelse bile insan için WHOM zorunludur.'
+            },
+            {
+                id: 'd5',
+                sentence: 'She is the mentor ____ I truly believe will help you overcome your exam anxiety.',
+                answer: 'who',
+                hint: 'Ara Cümle Tuzağı! "I truly believe" ifadesini atın: "____ will help you". Fiilin öznesi ("she will help") = WHO.'
+            },
+            {
+                id: 'd6',
+                sentence: 'To ____ should we address this official scholarship application letter?',
+                answer: 'whom',
+                hint: 'Kural: Cümle başında "To" edatı bulunduğu için soru zamiri mutlaka WHOM olur ("To him/her").'
+            },
+            {
+                id: 'd7',
+                sentence: 'Passengers ____ were delayed due to the storm received complimentary hotel vouchers.',
+                answer: 'who',
+                hint: 'Test: "They were delayed." Boşluktan hemen sonra fiil (were delayed) geliyor &rarr; Özne = WHO.'
+            },
+            {
+                id: 'd8',
+                sentence: 'The diplomat ____ the international press criticized harshly resigned this morning.',
+                answer: 'whom',
+                hint: 'Test: "The international press criticized him/her." Özne (the press) + Fiil (criticized) &rarr; Nesne = WHOM.'
+            }
+        ];
+
+        const grammarQuestions = [
+            {
+                id: 'g1',
+                tag: 'Preposition + Whom',
+                stem: 'The pioneering archaeologist, ____ the national museum dedicated its newest wing, spent over four decades excavating ancient settlements across Anatolia.',
+                options: ['who', 'to whom', 'that', 'whose', 'with which'],
+                correctIndex: 1,
+                explanation: '<strong>"dedicate something TO someone"</strong> (bir şeyi birine adamak) fiili <em>to</em> edatıyla kullanılır. Nitelediği isim insan (<em>archaeologist</em>) olduğu ve edattan hemen sonra geldiği için doğru cevap <strong>B) to whom</strong> olur. Ayrıca virgülden sonra <em>that</em> kullanılmaz; <em>with which</em> cansız varlıklar içindir.'
+            },
+            {
+                id: 'g2',
+                tag: 'Quantifier + of Whom',
+                stem: 'A recent sociological survey interviewed more than two thousand university graduates, nearly half of ____ reported experiencing severe career anxiety within their first year after graduation.',
+                options: ['who', 'whose', 'whom', 'that', 'which'],
+                correctIndex: 2,
+                explanation: '<strong>"nearly half of ____"</strong> yapısı <em>of</em> edatıyla biten bir miktar ifadesidir. Gönderme yaptığı isim <em>university graduates</em> (insanlar) olduğu için edattan hemen sonra <strong>C) whom</strong> kullanılması zorunludur. Devamında <em>reported</em> fiilinin gelmesi sizi şaşırtmasın; <em>of who</em> gramer açısından yanlıştır.'
+            },
+            {
+                id: 'g3',
+                tag: 'Özne Konumu (Who)',
+                stem: 'In cognitive psychology, researchers often study individuals ____ possess an extraordinary ability to recall historical dates and personal events with remarkable precision.',
+                options: ['whom', 'which', 'whose', 'who', 'in whom'],
+                correctIndex: 3,
+                explanation: 'Boşluktan hemen sonra <strong>possess</strong> (sahip olmak) fiili gelmektedir. Yani boşluk, sıfat cümleciğinin öznesi konumundadır (<em>They possess...</em>). İnsan nitelerken özne konumunda <strong>D) who</strong> kullanılır; <em>whom</em> yalnızca nesne veya edat sonrası konumda kullanılabilir.'
+            },
+            {
+                id: 'g4',
+                tag: 'Ara Cümle (Interrupter) Tuzağı',
+                stem: 'During the international summit, the delegates unanimously elected a chairperson ____ they firmly believed could mediate the long-standing trade dispute fairly.',
+                options: ['whom', 'which', 'whose', 'by whom', 'who'],
+                correctIndex: 4,
+                explanation: 'YDT\'nin en meşhur <strong>ara cümle (interrupter)</strong> tuzağıdır! <em>"they firmly believed"</em> ifadesini parantez içine alıp cümleden çıkarın: geriye <em>"____ could mediate..."</em> kalır. Boşluk <em>could mediate</em> fiilinin öznesidir (<em>he/she could mediate</em>). Bu yüzden cevap <strong>E) who</strong> olur.'
+            },
+            {
+                id: 'g5',
+                tag: 'Fiil + Edat (Discuss with)',
+                stem: 'Patients diagnosed with chronic insomnia are strongly advised to consult a sleep specialist ____ they can openly discuss both their lifestyle habits and psychological stressors.',
+                options: ['who', 'with whom', 'whose', 'whom', 'of which'],
+                correctIndex: 1,
+                explanation: '<strong>"discuss something WITH someone"</strong> (bir konuyu biriyle konuşmak/tartışmak) yapısı <em>with</em> edatı ister. Cümle sonunda <em>with</em> bırakılmadığı için edatın zamirden önce gelmesi gerekir: <strong>B) with whom</strong>. Tek başına <em>whom</em> veya <em>who</em> edat eksikliği nedeniyle elenir.'
+            },
+            {
+                id: 'g6',
+                tag: 'Non-Defining Nesne (Whom)',
+                stem: 'Marie Curie, ____ the scientific community still reveres as one of the greatest minds in modern physics and chemistry, was the first person to win Nobel Prizes in two different sciences.',
+                options: ['that', 'which', 'whom', 'whose', 'to whom'],
+                correctIndex: 2,
+                explanation: 'İki virgül arasında ek bilgi veren (<em>non-defining</em>) bir cümleciktir; bu yüzden <em>that</em> kesinlikle elenir. Devamında <em>the scientific community</em> (özne) + <em>still reveres</em> (geçişli fiil: <em>revere someone</em> &rarr; birine derin saygı duymak) vardır. Marie Curie nesne konumunda olduğu (<em>reveres her</em>) ve fiil edat almadığı için <strong>C) whom</strong> doğrudur.'
+            }
+        ];
+
+        const clozeQuestions = [
+            {
+                id: 'c1',
+                num: 1,
+                tag: 'Quantifier + of Whom',
+                options: ['who', 'whom', 'whose', 'which', 'that'],
+                correctIndex: 1,
+                explanation: '<em>"Young apprentices, many of (1) ____ entered..."</em> &rarr; Çıraklar (insan) nitelendiği ve öncesinde <strong>many of</strong> (edat: <em>of</em>) bulunduğu için kesinlikle <strong>B) whom</strong> gelir.'
+            },
+            {
+                id: 'c2',
+                num: 2,
+                tag: 'Verb + Prep (Depend on)',
+                options: ['who', 'whom', 'on whom', 'whose', 'with which'],
+                correctIndex: 2,
+                explanation: '<em>"...a respected mentor (2) ____ the apprentices depended..."</em> &rarr; <strong>depend ON someone</strong> (birine güvenmek/bağlı olmak) yapısı nedeniyle edat zamirin önüne alınır: <strong>C) on whom</strong>.'
+            },
+            {
+                id: 'c3',
+                num: 3,
+                tag: 'Özne Konumu (Those who)',
+                options: ['whom', 'whose', 'which', 'who', 'to whom'],
+                correctIndex: 3,
+                explanation: '<em>"...usually those (3) ____ demonstrated exceptional patience..."</em> &rarr; <em>those</em> burada öğrencileri (insanları) ifade eder ve boşluktan hemen sonra <strong>demonstrated</strong> fiili gelir. Özne konumunda <strong>D) who</strong> kullanılır.'
+            },
+            {
+                id: 'c4',
+                num: 4,
+                tag: 'Verb + Prep (Collaborate with)',
+                options: ['with whom', 'who', 'whom', 'in which', 'whose'],
+                correctIndex: 0,
+                explanation: '<em>"...patrons (4) ____ these masters frequently collaborated..."</em> &rarr; <strong>collaborate WITH someone</strong> (biriyle iş birliği yapmak) fiili <em>with</em> edatı gerektirir. İnsan nitelediği için <strong>A) with whom</strong> doğrudur.'
+            },
+            {
+                id: 'c5',
+                num: 5,
+                tag: 'Doğrudan Nesne (Whom)',
+                options: ['whose', 'which', 'whom', 'to whom', 'what'],
+                correctIndex: 2,
+                explanation: '<em>"...Renaissance pioneers (5) ____ critics widely regard as..."</em> &rarr; <strong>regard someone as...</strong> (birini ... olarak görmek) yapısında <em>critics</em> özne, <em>pioneers</em> ise nesnedir (<em>critics regard them as</em>). Edat gerekmediği için doğrudan <strong>C) whom</strong> gelir.'
+            }
+        ];
+
+        const completionQuestions = [
+            {
+                id: 'sc1',
+                tag: 'Quantifier + of Whom & Anlam Uyumu',
+                stem: 'Over forty renowned marine biologists attended the emergency conference on coral bleaching, ----.',
+                options: [
+                    'several of which proposed banning coastal construction near reef ecosystems',
+                    'most of whom agreed that rising ocean temperatures require immediate global action',
+                    'whose research was funded by whom the maritime agency appointed last year',
+                    'although none of them who had previously studied tropical marine habitats',
+                    'for whom the conference hall was renovated to host international tourists'
+                ],
+                correctIndex: 1,
+                explanation: 'Ana cümle <strong>marine biologists</strong> (insanlar) üzerine kuruludur. <strong>A şıkkı</strong> insan için <em>which</em> kullandığından elenir. <strong>C ve D şıkları</strong> bozuk/eksik cümle yapısına sahiptir. <strong>E şıkkı</strong> anlamca ilgisizdir (turistler). <strong>B şıkkı</strong> <em>most of whom</em> (çoğu) ile hem grameri kusursuz kurar hem de mercan beyazlaşması ile okyanus sıcaklığı arasındaki bağlantıyı tamamlar.'
+            },
+            {
+                id: 'sc2',
+                tag: 'Zıtlık (Although) + Edatlı Whom',
+                stem: 'Although the renowned playwright avoided public interviews throughout his life, ----.',
+                options: [
+                    'he maintained a lifelong correspondence with a close circle of editors in whom he placed complete trust',
+                    'the critics who praised his early tragedies were rarely invited to whom he dedicated his memoirs',
+                    'his final manuscript was discovered by a biographer whom had spent years searching his attic',
+                    'many theatre directors for who he wrote complex scripts struggled to stage his plays',
+                    'his plays still resonate with audiences whom appreciate subtle psychological drama'
+                ],
+                correctIndex: 0,
+                explanation: '<strong>Although</strong> zıtlık bağlacı, röportajlardan kaçınmasına rağmen güvendiği editörlerle ömür boyu mektuplaşmasını zıtlar. <strong>A şıkkında</strong> <em>place trust IN someone</em> yapısından dolayı <strong>in whom</strong> %100 doğrudur. <strong>C ve E şıklarında</strong> fiilden önce özne konumunda yanlışlıkla <em>whom</em> kullanılmıştır (<em>who had spent</em>, <em>who appreciate</em> olmalıydı). <strong>D şıkkında</strong> <em>for who</em> (<em>for whom</em> olmalı) gramer hatasıdır.'
+            },
+            {
+                id: 'sc3',
+                tag: 'Özne + Nesne (Whom) Ayrımı',
+                stem: 'Psychologists emphasize that teenagers who lack supportive adult figures in their daily lives ----.',
+                options: [
+                    'are often those to whom peers look up for academic advice',
+                    'tend to seek validation from online influencers whom they perceive as relatable role models',
+                    'may develop resilience faster than children who their parents closely supervise them',
+                    'rarely interact with mentors from who they could learn emotional regulation',
+                    'usually admire teachers whom inspire them to pursue creative hobbies'
+                ],
+                correctIndex: 1,
+                explanation: 'Cümle kökü <em>that</em> cümleciğinin öznesini vermiştir; devamında fiil gelmelidir. <strong>B şıkkında</strong> <em>influencers whom they perceive as...</em> yapısında <em>they</em> (özne) + <em>perceive</em> (fiil) olduğu için <strong>whom</strong> kullanımı kusursuzdur ve anlam akışı mükemmeldir. <strong>C</strong>\'de <em>them</em> fazladır; <strong>D</strong>\'de <em>from who</em> yanlıştır (<em>from whom</em>); <strong>E</strong>\'de özne konumunda <em>whom inspire</em> yanlıştır (<em>who inspire</em>).'
+            },
+            {
+                id: 'sc4',
+                tag: 'Zıtlık (Despite) + With Whom',
+                stem: '----, the scholarship committee ultimately selected a candidate from a rural high school who had overcome severe financial hardship.',
+                options: [
+                    'Despite interviewing dozens of applicants with whom they were deeply impressed',
+                    'Because there were very few students who the committee could grant financial aid',
+                    'Since the final applicant was the only person whom had submitted every required essay on time',
+                    'Even though the donors for who the foundation was named demanded stricter criteria',
+                    'While most of the nominees whom applied for the grant lived in metropolitan areas'
+                ],
+                correctIndex: 0,
+                explanation: '<strong>A şıkkı</strong> <em>Despite</em> (rağmen) ile çok etkilendikleri onlarca adayla görüşmelerine rağmen maddi zorlukları aşan bir öğrenciyi seçtiklerini anlatır; <em>be impressed WITH someone</em> &rarr; <strong>with whom</strong> tamamen doğrudur. <strong>C ve E</strong>\'de özne konumunda yanlışlıkla <em>whom</em> kullanılmıştır (<em>who had submitted</em>, <em>who applied</em>). <strong>D</strong>\'de <em>for who</em> gramer hatasıdır (<em>for whom</em>). <strong>B</strong>\'de <em>to whom</em> eksiktir.'
+            },
+            {
+                id: 'sc5',
+                tag: 'Ara Cümle (Interrupter) + Anlam',
+                stem: 'When forming a multidisciplinary research team, project leaders should prioritize specialists ----.',
+                options: [
+                    'whom are capable of translating complex statistical data into clear reports',
+                    'with who younger interns can comfortably share unconventional ideas',
+                    'who they know can collaborate effectively under tight deadlines',
+                    'none of whom has any prior experience in laboratory management',
+                    'whose contributions whom the funding board will evaluate next autumn'
+                ],
+                correctIndex: 2,
+                explanation: '<strong>C şıkkında</strong> <em>"they know"</em> ara cümledir; paranteze alındığında <em>"who can collaborate effectively..."</em> (özne + fiil) kalır ve <strong>who</strong> kullanımı tamamen doğrudur. <strong>A</strong>\'da fiilden önce <em>whom</em> yanlış kullanılmıştır (<em>who are capable</em>); <strong>B</strong>\'de <em>with who</em> yanlıştır (<em>with whom</em>); <strong>D</strong> anlamca çelişir ("hiç tecrübesi olmayanlara öncelik verilmeli" mantıksız); <strong>E</strong> yapısal olarak bozuktur.'
+            }
+        ];
+
+        // ==========================================
+        // 2. APPLICATION STATE
+        // ==========================================
+        const state = {
+            activeTab: 'lesson',
+            answers: {
+                drill: {},       // { d1: 'who' }
+                grammar: {},     // { g1: 1 }
+                cloze: {},       // { c1: 1 }
+                completion: {}   // { sc1: 1 }
+            }
+        };
+
+        const LETTERS = ['A', 'B', 'C', 'D', 'E'];
+
+        // ==========================================
+        // 3. UI HELPERS & NAVIGATION
+        // ==========================================
+        let toastTimer = null;
+        function showToast(message, type = 'info') {
+            try {
+                const box = document.getElementById('toast-box');
+                const msgEl = document.getElementById('toast-message');
+                const iconEl = document.getElementById('toast-icon');
+                
+                msgEl.textContent = message;
+                if (type === 'success') {
+                    iconEl.setAttribute('data-lucide', 'check-circle-2');
+                    iconEl.className = 'w-5 h-5 text-emerald-400 shrink-0';
+                } else if (type === 'error') {
+                    iconEl.setAttribute('data-lucide', 'x-circle');
+                    iconEl.className = 'w-5 h-5 text-rose-400 shrink-0';
+                } else {
+                    iconEl.setAttribute('data-lucide', 'info');
+                    iconEl.className = 'w-5 h-5 text-indigo-400 shrink-0';
+                }
+                lucide.createIcons();
+
+                box.classList.remove('hidden');
+                if (toastTimer) clearTimeout(toastTimer);
+                toastTimer = setTimeout(() => {
+                    box.classList.add('hidden');
+                }, 2800);
+            } catch (err) {
+                console.error('Toast gösterim hatası:', err);
+            }
+        }
+
+        function switchTab(tabName) {
+            try {
+                state.activeTab = tabName;
+
+                // Hide all sections
+                document.querySelectorAll('.tab-section').forEach(sec => {
+                    sec.classList.add('hidden');
+                });
+
+                // Show target section
+                const target = document.getElementById(`section-${tabName}`);
+                if (target) {
+                    target.classList.remove('hidden');
+                    target.classList.remove('fade-in');
+                    void target.offsetWidth; // trigger reflow
+                    target.classList.add('fade-in');
+                }
+
+                // Update nav button styles
+                document.querySelectorAll('.tab-nav-btn').forEach(btn => {
+                    btn.classList.remove('bg-slate-900', 'text-white', 'shadow-sm');
+                    btn.classList.add('bg-slate-100', 'text-slate-600', 'hover:bg-slate-200');
+                });
+                const activeBtn = document.getElementById(`tab-btn-${tabName}`);
+                if (activeBtn) {
+                    activeBtn.classList.remove('bg-slate-100', 'text-slate-600', 'hover:bg-slate-200');
+                    activeBtn.classList.add('bg-slate-900', 'text-white', 'shadow-sm');
+                }
+
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                lucide.createIcons();
+            } catch (err) {
+                console.error('Sekme geçiş hatası:', err);
+            }
+        }
+
+        // ==========================================
+        // 4. SCORE & PROGRESS UPDATER
+        // ==========================================
+        function updateScores() {
+            let drillCorrect = 0;
+            drillQuestions.forEach(q => {
+                if (state.answers.drill[q.id] === q.answer) drillCorrect++;
+            });
+
+            let grammarCorrect = 0;
+            grammarQuestions.forEach(q => {
+                if (state.answers.grammar[q.id] === q.correctIndex) grammarCorrect++;
+            });
+
+            let clozeCorrect = 0;
+            clozeQuestions.forEach(q => {
+                if (state.answers.cloze[q.id] === q.correctIndex) clozeCorrect++;
+            });
+
+            let completionCorrect = 0;
+            completionQuestions.forEach(q => {
+                if (state.answers.completion[q.id] === q.correctIndex) completionCorrect++;
+            });
+
+            const totalCorrect = drillCorrect + grammarCorrect + clozeCorrect + completionCorrect;
+            const totalQuestions = drillQuestions.length + grammarQuestions.length + clozeQuestions.length + completionQuestions.length;
+
+            document.getElementById('global-correct').textContent = totalCorrect;
+            document.getElementById('global-total').textContent = totalQuestions;
+
+            document.getElementById('badge-drill').textContent = `${drillCorrect}/${drillQuestions.length}`;
+            document.getElementById('badge-grammar').textContent = `${grammarCorrect}/${grammarQuestions.length}`;
+            document.getElementById('badge-cloze').textContent = `${clozeCorrect}/${clozeQuestions.length}`;
+            document.getElementById('badge-completion').textContent = `${completionCorrect}/${completionQuestions.length}`;
+        }
+
+        // ==========================================
+        // 5. RENDER: HIZLI REFLEKS (DRILL)
+        // ==========================================
+        function renderDrill() {
+            const container = document.getElementById('drill-container');
+            container.innerHTML = '';
+
+            drillQuestions.forEach((q, idx) => {
+                const chosen = state.answers.drill[q.id];
+                const isAnswered = chosen !== undefined;
+                const isCorrect = chosen === q.answer;
+
+                const formattedSentence = q.sentence.replace('____', () => {
+                    if (!isAnswered) {
+                        return `<span class="inline-block px-2.5 py-0.5 mx-1 rounded-lg bg-slate-100 border border-dashed border-slate-400 text-slate-400 font-bold">____</span>`;
+                    }
+                    const pillClass = isCorrect
+                        ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                        : 'bg-rose-100 text-rose-800 border-rose-300';
+                    return `<span class="inline-block px-2.5 py-0.5 mx-1 rounded-lg border font-extrabold ${pillClass}">${chosen}</span>`;
+                });
+
+                const card = document.createElement('div');
+                card.className = 'bg-white rounded-3xl border border-slate-200 p-5 sm:p-6 shadow-sm flex flex-col justify-between gap-4';
+
+                const whoBtnClass = !isAnswered
+                    ? 'bg-slate-50 hover:bg-emerald-50 hover:border-emerald-400 text-slate-700 border-slate-200'
+                    : (q.answer === 'who'
+                        ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm'
+                        : (chosen === 'who' ? 'bg-rose-500 text-white border-rose-500' : 'bg-slate-50 text-slate-400 border-slate-200 opacity-60'));
+
+                const whomBtnClass = !isAnswered
+                    ? 'bg-slate-50 hover:bg-indigo-50 hover:border-indigo-400 text-slate-700 border-slate-200'
+                    : (q.answer === 'whom'
+                        ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
+                        : (chosen === 'whom' ? 'bg-rose-500 text-white border-rose-500' : 'bg-slate-50 text-slate-400 border-slate-200 opacity-60'));
+
+                card.innerHTML = `
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-xs font-extrabold text-slate-400 uppercase tracking-wider">Alıştırma #${idx + 1}</span>
+                            ${isAnswered ? (isCorrect
+                                ? '<span class="text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full flex items-center gap-1"><i data-lucide="check" class="w-3.5 h-3.5"></i> Doğru</span>'
+                                : '<span class="text-xs font-bold text-rose-700 bg-rose-50 px-2.5 py-1 rounded-full flex items-center gap-1"><i data-lucide="x" class="w-3.5 h-3.5"></i> Yanlış</span>') : ''}
+                        </div>
+                        <p class="text-slate-800 font-semibold text-base leading-relaxed">${formattedSentence}</p>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="grid grid-cols-2 gap-3">
+                            <button onclick="answerDrill('${q.id}', 'who')" ${isAnswered ? 'disabled' : ''} class="py-3 px-4 rounded-xl border-2 font-extrabold text-sm transition-all ${whoBtnClass}">
+                                who
+                            </button>
+                            <button onclick="answerDrill('${q.id}', 'whom')" ${isAnswered ? 'disabled' : ''} class="py-3 px-4 rounded-xl border-2 font-extrabold text-sm transition-all ${whomBtnClass}">
+                                whom
+                            </button>
+                        </div>
+                        ${isAnswered ? `
+                            <div class="p-3.5 rounded-2xl text-xs leading-relaxed ${isCorrect ? 'bg-emerald-50 border border-emerald-200 text-emerald-900' : 'bg-amber-50 border border-amber-200 text-amber-950'}">
+                                ${q.hint}
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+            lucide.createIcons();
+        }
+
+        function answerDrill(id, choice) {
+            state.answers.drill[id] = choice;
+            const q = drillQuestions.find(item => item.id === id);
+            renderDrill();
+            updateScores();
+            if (q && q.answer === choice) {
+                showToast('Harika! Doğru cevap.', 'success');
+            } else {
+                showToast(`Doğru cevap "${q.answer}" olmalıydı. Açıklamayı inceleyin.`, 'error');
+            }
+        }
+
+        // ==========================================
+        // 6. RENDER: YDT MULTIPLE CHOICE BUILDER
+        //    (Used for Grammar & Sentence Completion)
+        // ==========================================
+        function renderMultipleChoiceSection(sectionKey, questions, containerId) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+
+            questions.forEach((q, idx) => {
+                const chosenIdx = state.answers[sectionKey][q.id];
+                const isAnswered = chosenIdx !== undefined;
+                const isCorrect = chosenIdx === q.correctIndex;
+
+                const card = document.createElement('div');
+                card.className = 'bg-white rounded-3xl border border-slate-200 p-5 sm:p-7 shadow-sm space-y-5';
+
+                const optionsHtml = q.options.map((opt, oIdx) => {
+                    let btnClass = 'bg-slate-50 hover:bg-indigo-50/70 hover:border-indigo-300 border-slate-200 text-slate-800';
+                    let badgeClass = 'bg-white border border-slate-300 text-slate-600';
+
+                    if (isAnswered) {
+                        if (oIdx === q.correctIndex) {
+                            btnClass = 'bg-emerald-50 border-emerald-500 text-emerald-950 ring-1 ring-emerald-500';
+                            badgeClass = 'bg-emerald-600 border-emerald-600 text-white';
+                        } else if (oIdx === chosenIdx && oIdx !== q.correctIndex) {
+                            btnClass = 'bg-rose-50 border-rose-400 text-rose-950';
+                            badgeClass = 'bg-rose-600 border-rose-600 text-white';
+                        } else {
+                            btnClass = 'bg-slate-50/60 border-slate-200 text-slate-400 opacity-75';
+                            badgeClass = 'bg-slate-100 border-slate-200 text-slate-400';
+                        }
+                    }
+
+                    return `
+                        <button onclick="answerMC('${sectionKey}', '${q.id}', ${oIdx})" ${isAnswered ? 'disabled' : ''} class="w-full text-left p-3.5 rounded-2xl border-2 transition-all flex items-start gap-3 ${btnClass}">
+                            <span class="w-7 h-7 rounded-lg font-extrabold text-xs flex items-center justify-center shrink-0 mt-0.5 ${badgeClass}">${LETTERS[oIdx]}</span>
+                            <span class="text-sm sm:text-[15px] font-medium leading-snug pt-0.5">${opt}</span>
+                        </button>
+                    `;
+                }).join('');
+
+                card.innerHTML = `
+                    <div class="flex flex-wrap items-center justify-between gap-2">
+                        <div class="flex items-center gap-2">
+                            <span class="w-8 h-8 rounded-xl bg-slate-900 text-white font-black text-xs flex items-center justify-center">${idx + 1}</span>
+                            <span class="text-xs font-bold text-indigo-700 bg-indigo-50 border border-indigo-100 px-3 py-1 rounded-full">${q.tag}</span>
+                        </div>
+                        ${isAnswered ? (isCorrect
+                            ? '<span class="text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full flex items-center gap-1"><i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i> Doğru Cevap</span>'
+                            : `<span class="text-xs font-bold text-rose-700 bg-rose-50 border border-rose-200 px-3 py-1 rounded-full flex items-center gap-1"><i data-lucide="x-circle" class="w-3.5 h-3.5"></i> Doğru Şık: ${LETTERS[q.correctIndex]}</span>`) : ''}
+                    </div>
+                    <p class="text-slate-900 font-semibold text-base sm:text-lg leading-relaxed">${q.stem}</p>
+                    <div class="grid grid-cols-1 ${sectionKey === 'grammar' ? 'sm:grid-cols-2 lg:grid-cols-5' : 'grid-cols-1'} gap-2.5">
+                        ${optionsHtml}
+                    </div>
+                    ${isAnswered ? `
+                        <div class="p-4 sm:p-5 rounded-2xl bg-slate-900 text-slate-100 text-sm leading-relaxed flex items-start gap-3 fade-in">
+                            <i data-lucide="sparkles" class="w-5 h-5 text-amber-400 shrink-0 mt-0.5"></i>
+                            <div>
+                                <p class="text-xs font-bold text-amber-400 uppercase tracking-wider mb-1">YDT Çözüm Stratejisi</p>
+                                <p>${q.explanation}</p>
+                            </div>
+                        </div>
+                    ` : ''}
+                `;
+
+                container.appendChild(card);
+            });
+            lucide.createIcons();
+        }
+
+        function answerMC(sectionKey, qId, optionIdx) {
+            state.answers[sectionKey][qId] = optionIdx;
+            const list = sectionKey === 'grammar' ? grammarQuestions : completionQuestions;
+            const containerId = sectionKey === 'grammar' ? 'grammar-container' : 'completion-container';
+            const q = list.find(item => item.id === qId);
+
+            renderMultipleChoiceSection(sectionKey, list, containerId);
+            updateScores();
+
+            if (q && q.correctIndex === optionIdx) {
+                showToast('Tebrikler! Soruyu doğru çözdünüz.', 'success');
+            } else {
+                showToast(`Yanlış cevap. Doğru şık: ${LETTERS[q.correctIndex]}. Çözümü inceleyin.`, 'error');
+            }
+        }
+
+        // ==========================================
+        // 7. RENDER: YDT CLOZE TEST
+        // ==========================================
+        function renderCloze() {
+            const container = document.getElementById('cloze-container');
+            container.innerHTML = '';
+
+            clozeQuestions.forEach((q, idx) => {
+                const chosenIdx = state.answers.cloze[q.id];
+                const isAnswered = chosenIdx !== undefined;
+                const isCorrect = chosenIdx === q.correctIndex;
+
+                // Update inline blank inside the passage
+                const blankEl = document.getElementById(`passage-blank-${idx}`);
+                if (blankEl) {
+                    blankEl.classList.remove('correct-blank', 'wrong-blank');
+                    if (isAnswered) {
+                        blankEl.textContent = `(${q.num}) ${q.options[chosenIdx]}`;
+                        blankEl.classList.add(isCorrect ? 'correct-blank' : 'wrong-blank');
+                    } else {
+                        blankEl.textContent = `(${q.num}) ____`;
+                    }
+                }
+
+                const card = document.createElement('div');
+                card.id = `cloze-card-${idx}`;
+                card.className = 'bg-white rounded-3xl border border-slate-200 p-5 shadow-sm space-y-4 transition-all';
+
+                const optionsHtml = q.options.map((opt, oIdx) => {
+                    let btnClass = 'bg-slate-50 hover:bg-purple-50 hover:border-purple-300 border-slate-200 text-slate-800';
+                    let badgeClass = 'bg-white border border-slate-300 text-slate-600';
+
+                    if (isAnswered) {
+                        if (oIdx === q.correctIndex) {
+                            btnClass = 'bg-emerald-50 border-emerald-500 text-emerald-950 font-bold';
+                            badgeClass = 'bg-emerald-600 border-emerald-600 text-white';
+                        } else if (oIdx === chosenIdx) {
+                            btnClass = 'bg-rose-50 border-rose-400 text-rose-950';
+                            badgeClass = 'bg-rose-600 border-rose-600 text-white';
+                        } else {
+                            btnClass = 'bg-slate-50/50 border-slate-200 text-slate-400 opacity-70';
+                            badgeClass = 'bg-slate-100 border-slate-200 text-slate-400';
+                        }
+                    }
+
+                    return `
+                        <button onclick="answerCloze('${q.id}', ${oIdx})" ${isAnswered ? 'disabled' : ''} class="w-full text-left px-3.5 py-2.5 rounded-xl border-2 transition-all flex items-center gap-2.5 ${btnClass}">
+                            <span class="w-6 h-6 rounded-md font-extrabold text-xs flex items-center justify-center shrink-0 ${badgeClass}">${LETTERS[oIdx]}</span>
+                            <span class="text-sm font-semibold">${opt}</span>
+                        </button>
+                    `;
+                }).join('');
+
+                card.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="px-2.5 py-1 rounded-lg bg-purple-600 text-white font-black text-xs">Boşluk (${q.num})</span>
+                            <span class="text-xs font-bold text-slate-500">${q.tag}</span>
+                        </div>
+                        ${isAnswered ? (isCorrect
+                            ? '<span class="text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full">✓ Doğru</span>'
+                            : `<span class="text-xs font-bold text-rose-700 bg-rose-50 px-2.5 py-1 rounded-full">✗ Cevap: ${LETTERS[q.correctIndex]}</span>`) : ''}
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        ${optionsHtml}
+                    </div>
+                    ${isAnswered ? `
+                        <div class="p-3.5 rounded-2xl bg-slate-900 text-slate-100 text-xs leading-relaxed">
+                            <span class="text-amber-400 font-bold block mb-1">Çözüm:</span>
+                            ${q.explanation}
+                        </div>
+                    ` : ''}
+                `;
+
+                container.appendChild(card);
+            });
+            lucide.createIcons();
+        }
+
+        function answerCloze(qId, optionIdx) {
+            state.answers.cloze[qId] = optionIdx;
+            const q = clozeQuestions.find(item => item.id === qId);
+            renderCloze();
+            updateScores();
+
+            if (q && q.correctIndex === optionIdx) {
+                showToast(`(${q.num}) numaralı boşluk doğru!`, 'success');
+            } else {
+                showToast(`(${q.num}) için doğru şık ${LETTERS[q.correctIndex]} (${q.options[q.correctIndex]}).`, 'error');
+            }
+        }
+
+        function focusClozeQuestion(index) {
+            // Highlight clicked blank and scroll smoothly to its question card
+            document.querySelectorAll('.cloze-blank').forEach(el => el.classList.remove('active-blank'));
+            const blankEl = document.getElementById(`passage-blank-${index}`);
+            if (blankEl) blankEl.classList.add('active-blank');
+
+            const cardEl = document.getElementById(`cloze-card-${index}`);
+            if (cardEl) {
+                cardEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                cardEl.classList.add('ring-2', 'ring-purple-500');
+                setTimeout(() => cardEl.classList.remove('ring-2', 'ring-purple-500'), 1400);
+            }
+        }
+
+        // ==========================================
+        // 8. RESET CONTROLS & INITIALIZATION
+        // ==========================================
+        function resetSection(sectionKey) {
+            state.answers[sectionKey] = {};
+            if (sectionKey === 'drill') renderDrill();
+            if (sectionKey === 'grammar') renderMultipleChoiceSection('grammar', grammarQuestions, 'grammar-container');
+            if (sectionKey === 'cloze') renderCloze();
+            if (sectionKey === 'completion') renderMultipleChoiceSection('completion', completionQuestions, 'completion-container');
+            updateScores();
+            showToast('Bölüm yanıtları sıfırlandı.', 'info');
+        }
+
+        function resetAllProgress() {
+            state.answers = { drill: {}, grammar: {}, cloze: {}, completion: {} };
+            renderAll();
+            updateScores();
+            showToast('Tüm testlerdeki ilerleme sıfırlandı.', 'info');
+        }
+
+        function renderAll() {
+            renderDrill();
+            renderMultipleChoiceSection('grammar', grammarQuestions, 'grammar-container');
+            renderCloze();
+            renderMultipleChoiceSection('completion', completionQuestions, 'completion-container');
+        }
+
+        // Initialize application once DOM is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            try {
+                renderAll();
+                updateScores();
+                lucide.createIcons();
+            } catch (err) {
+                console.error('Uygulama başlatma hatası:', err);
+            }
+        });
+    </script>
+</body>
+</html>
