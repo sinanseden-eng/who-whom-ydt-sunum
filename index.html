@@ -114,6 +114,29 @@
         <p id="toast-message" class="text-sm font-medium leading-snug">Bildirim mesajı</p>
     </div>
 
+    <!-- Image Zoom Lightbox Modal -->
+    <div id="image-zoom-modal" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm p-4 sm:p-8 flex items-center justify-center fade-in" onclick="closeImageModal(event)">
+        <div class="relative max-w-3xl w-full bg-white rounded-3xl p-4 sm:p-6 shadow-2xl border border-slate-200" onclick="event.stopPropagation()">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+                <div class="flex items-center gap-2">
+                    <span class="px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-700 text-xs font-extrabold">Sunum Görseli</span>
+                    <h3 class="font-extrabold text-slate-800 text-sm sm:text-base">It's Simple! 😄</h3>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="triggerCornerImageUpload()" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-indigo-50 text-slate-700 hover:text-indigo-700 text-xs font-bold transition-colors flex items-center gap-1.5">
+                        <i data-lucide="image-plus" class="w-3.5 h-3.5"></i> Görsel Yükle
+                    </button>
+                    <button onclick="closeImageModal()" class="p-2 rounded-xl bg-slate-100 hover:bg-rose-50 text-slate-500 hover:text-rose-600 transition-colors" aria-label="Kapat">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            </div>
+            <div id="modal-image-host" class="w-full flex items-center justify-center overflow-hidden rounded-2xl bg-white">
+                <!-- Active image or SVG clone injected here -->
+            </div>
+        </div>
+    </div>
+
     <!-- Sticky Header & Navigation -->
     <header class="bg-white/90 backdrop-blur-md border-b border-slate-200 sticky top-0 z-30 shadow-sm">
         <div class="max-w-6xl mx-auto px-4 sm:px-6 py-3.5">
@@ -175,26 +198,127 @@
         <section id="section-lesson" class="tab-section fade-in space-y-8">
             
             <!-- Hero Banner -->
-            <div class="bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 rounded-3xl p-6 sm:p-10 text-white shadow-xl relative overflow-hidden">
+            <div class="bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 rounded-3xl p-6 sm:p-8 lg:p-10 text-white shadow-xl relative overflow-hidden">
                 <div class="absolute -top-12 -right-12 w-56 h-56 bg-emerald-500/20 rounded-full blur-3xl pointer-events-none"></div>
                 <div class="absolute -bottom-12 -left-12 w-56 h-56 bg-indigo-500/25 rounded-full blur-3xl pointer-events-none"></div>
-                <div class="relative z-10 max-w-3xl">
-                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 border border-white/15 text-emerald-300 text-xs font-bold uppercase tracking-wider mb-4">
-                        <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> ÖSYM / YDT Odaklı Anlatım
-                    </span>
-                    <h2 class="text-2xl sm:text-4xl font-black tracking-tight leading-tight mb-3">
-                        <span class="text-emerald-400">Who</span> mu, <span class="text-indigo-300">Whom</span> mu?<br>Tek Bakışta Farkı Yakala!
-                    </h2>
-                    <p class="text-slate-300 text-sm sm:text-base leading-relaxed mb-6">
-                        Günlük İngilizcede <strong class="text-white">who</strong> çoğu zaman <strong class="text-white">whom</strong> yerine kullanılabilse de, <strong>YDT / YDS / YÖKDİL</strong> gibi akademik sınavlarda bu ikisi arasındaki özne–nesne ayrımı ve <strong>edat (preposition)</strong> kuralları doğrudan soru belirleyicidir.
-                    </p>
-                    <div class="flex flex-wrap gap-3">
-                        <button onclick="switchTab('drill')" class="px-5 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm transition-colors flex items-center gap-2 shadow-lg">
-                            <i data-lucide="zap" class="w-4 h-4"></i> Hızlı Refleks Testine Geç
-                        </button>
-                        <button onclick="switchTab('grammar')" class="px-5 py-3 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/20 font-bold text-sm transition-colors flex items-center gap-2">
-                            <i data-lucide="list-checks" class="w-4 h-4"></i> YDT Sorularını Çöz
-                        </button>
+                <div class="relative z-10 flex flex-col lg:flex-row items-start lg:items-center gap-6 lg:gap-8">
+                    
+                    <!-- Left Corner Presentation Image Card -->
+                    <div class="w-full sm:w-80 lg:w-72 xl:w-80 shrink-0 bg-white rounded-2xl p-2.5 shadow-2xl border border-white/25 self-start">
+                        <input type="file" id="corner-img-input" accept="image/*" class="hidden" onchange="loadLocalCornerImage(event)">
+                        
+                        <div class="relative rounded-xl overflow-hidden bg-white group">
+                            <!-- Actual Uploaded Image (place image_7bbde8.jpg next to index.html on GitHub) -->
+                            <img id="hero-corner-img"
+                                 src="image_7bbde8.jpg"
+                                 alt="It's Simple - Rock Paper Scissors Lizard Spock"
+                                 class="w-full h-auto rounded-xl object-contain cursor-zoom-in block transition-transform duration-300 group-hover:scale-[1.02]"
+                                 onclick="openImageModal()"
+                                 onerror="handleCornerImgError()">
+
+                            <!-- Automatic Crisp SVG Fallback (Displayed if image_7bbde8.jpg is not in the same folder yet) -->
+                            <div id="hero-corner-svg" class="hidden w-full bg-white rounded-xl cursor-zoom-in" onclick="openImageModal()">
+                                <svg viewBox="0 0 420 310" class="w-full h-auto block select-none" xmlns="http://www.w3.org/2000/svg">
+                                    <defs>
+                                        <marker id="arr-dark" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                                            <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f172a"/>
+                                        </marker>
+                                    </defs>
+                                    <rect width="420" height="310" fill="#ffffff"/>
+                                    <text x="16" y="34" font-family="Inter, sans-serif" font-size="22" font-weight="600" fill="#0f172a">Its Simple</text>
+
+                                    <!-- Outer Pentagon Arrows -->
+                                    <line x1="252" y1="62" x2="322" y2="110" stroke="#0f172a" stroke-width="3.5" marker-end="url(#arr-dark)"/>
+                                    <line x1="342" y1="168" x2="314" y2="228" stroke="#0f172a" stroke-width="3.5" marker-end="url(#arr-dark)"/>
+                                    <line x1="262" y1="264" x2="188" y2="264" stroke="#0f172a" stroke-width="3.5" marker-end="url(#arr-dark)"/>
+                                    <line x1="132" y1="230" x2="104" y2="170" stroke="#0f172a" stroke-width="3.5" marker-end="url(#arr-dark)"/>
+                                    <line x1="126" y1="108" x2="194" y2="62" stroke="#0f172a" stroke-width="3.5" marker-end="url(#arr-dark)"/>
+
+                                    <!-- Inner Star Arrows -->
+                                    <line x1="214" y1="82" x2="162" y2="226" stroke="#0f172a" stroke-width="3.5" marker-end="url(#arr-dark)"/>
+                                    <line x1="176" y1="236" x2="318" y2="152" stroke="#0f172a" stroke-width="3.5" marker-end="url(#arr-dark)"/>
+                                    <line x1="312" y1="134" x2="138" y2="134" stroke="#0f172a" stroke-width="3.5" marker-end="url(#arr-dark)"/>
+                                    <line x1="134" y1="154" x2="274" y2="242" stroke="#0f172a" stroke-width="3.5" marker-end="url(#arr-dark)"/>
+                                    <line x1="288" y1="226" x2="236" y2="82" stroke="#0f172a" stroke-width="3.5" marker-end="url(#arr-dark)"/>
+
+                                    <!-- Labels -->
+                                    <text x="292" y="76" font-family="Inter, sans-serif" font-size="9.5" font-weight="600" fill="#1e293b">scissors cuts paper</text>
+                                    <text x="336" y="212" font-family="Inter, sans-serif" font-size="9.5" font-weight="600" fill="#1e293b">paper covers</text>
+                                    <text x="348" y="223" font-family="Inter, sans-serif" font-size="9.5" font-weight="600" fill="#1e293b">rock</text>
+                                    <text x="180" y="286" font-family="Inter, sans-serif" font-size="9.5" font-weight="600" fill="#1e293b">rock crushes lizard</text>
+                                    <text x="18" y="214" font-family="Inter, sans-serif" font-size="9.5" font-weight="600" fill="#1e293b">lizard poisons spock</text>
+                                    <text x="56" y="82" font-family="Inter, sans-serif" font-size="9.5" font-weight="600" fill="#1e293b">spock smashes scissors</text>
+                                    <text x="234" y="126" font-family="Inter, sans-serif" font-size="9" font-weight="600" fill="#1e293b">paper disproves spock</text>
+                                    <text x="166" y="96" font-family="Inter, sans-serif" font-size="9" font-weight="600" fill="#1e293b">scissors</text>
+                                    <text x="158" y="106" font-family="Inter, sans-serif" font-size="9" font-weight="600" fill="#1e293b">decapitates</text>
+                                    <text x="166" y="116" font-family="Inter, sans-serif" font-size="9" font-weight="600" fill="#1e293b">lizard</text>
+                                    <text x="128" y="176" font-family="Inter, sans-serif" font-size="9" font-weight="600" fill="#1e293b">spock vaporizes</text>
+                                    <text x="152" y="186" font-family="Inter, sans-serif" font-size="9" font-weight="600" fill="#1e293b">rock</text>
+                                    <text x="268" y="196" font-family="Inter, sans-serif" font-size="9" font-weight="600" fill="#1e293b">rock</text>
+                                    <text x="264" y="206" font-family="Inter, sans-serif" font-size="9" font-weight="600" fill="#1e293b">crushes</text>
+                                    <text x="262" y="216" font-family="Inter, sans-serif" font-size="9" font-weight="600" fill="#1e293b">scissors</text>
+                                    <text x="180" y="232" font-family="Inter, sans-serif" font-size="9" font-weight="600" fill="#1e293b">lizard</text>
+                                    <text x="182" y="242" font-family="Inter, sans-serif" font-size="9" font-weight="600" fill="#1e293b">eats</text>
+                                    <text x="178" y="252" font-family="Inter, sans-serif" font-size="9" font-weight="600" fill="#1e293b">paper</text>
+
+                                    <!-- 5 Character Nodes -->
+                                    <g transform="translate(225, 46)">
+                                        <circle r="24" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.5"/>
+                                        <text x="0" y="8" text-anchor="middle" font-size="24">✂️</text>
+                                    </g>
+                                    <g transform="translate(352, 134)">
+                                        <circle r="24" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.5"/>
+                                        <text x="0" y="8" text-anchor="middle" font-size="24">📄</text>
+                                    </g>
+                                    <g transform="translate(298, 258)">
+                                        <circle r="24" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.5"/>
+                                        <text x="0" y="8" text-anchor="middle" font-size="24">🪨</text>
+                                    </g>
+                                    <g transform="translate(152, 258)">
+                                        <circle r="24" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.5"/>
+                                        <text x="0" y="8" text-anchor="middle" font-size="24">🦎</text>
+                                    </g>
+                                    <g transform="translate(96, 134)">
+                                        <circle r="24" fill="#e0f2fe" stroke="#38bdf8" stroke-width="1.5"/>
+                                        <text x="0" y="8" text-anchor="middle" font-size="24">🖖</text>
+                                    </g>
+                                </svg>
+                            </div>
+                        </div>
+
+                        <!-- Subtle Action Bar Below Corner Image -->
+                        <div class="flex items-center justify-between pt-2 px-1">
+                            <span class="text-[11px] font-bold text-slate-500">It's Simple 😄</span>
+                            <div class="flex items-center gap-1">
+                                <button type="button" onclick="openImageModal()" class="p-1.5 rounded-lg text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 transition-colors" title="Görseli Büyüt">
+                                    <i data-lucide="zoom-in" class="w-3.5 h-3.5"></i>
+                                </button>
+                                <button type="button" onclick="triggerCornerImageUpload()" class="p-1.5 rounded-lg text-slate-500 hover:text-emerald-600 hover:bg-emerald-50 transition-colors" title="Bilgisayardan Görsel Seç">
+                                    <i data-lucide="image-plus" class="w-3.5 h-3.5"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Hero Text Content -->
+                    <div class="flex-1 min-w-0">
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 border border-white/15 text-emerald-300 text-xs font-bold uppercase tracking-wider mb-4">
+                            <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> ÖSYM / YDT Odaklı Anlatım
+                        </span>
+                        <h2 class="text-2xl sm:text-4xl font-black tracking-tight leading-tight mb-3">
+                            <span class="text-emerald-400">Who</span> mu, <span class="text-indigo-300">Whom</span> mu?<br>Tek Bakışta Farkı Yakala!
+                        </h2>
+                        <p class="text-slate-300 text-sm sm:text-base leading-relaxed mb-6">
+                            Günlük İngilizcede <strong class="text-white">who</strong> çoğu zaman <strong class="text-white">whom</strong> yerine kullanılabilse de, <strong>YDT / YDS / YÖKDİL</strong> gibi akademik sınavlarda bu ikisi arasındaki özne–nesne ayrımı ve <strong>edat (preposition)</strong> kuralları doğrudan soru belirleyicidir.
+                        </p>
+                        <div class="flex flex-wrap gap-3">
+                            <button onclick="switchTab('drill')" class="px-5 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm transition-colors flex items-center gap-2 shadow-lg">
+                                <i data-lucide="zap" class="w-4 h-4"></i> Hızlı Refleks Testine Geç
+                            </button>
+                            <button onclick="switchTab('grammar')" class="px-5 py-3 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/20 font-bold text-sm transition-colors flex items-center gap-2">
+                                <i data-lucide="list-checks" class="w-4 h-4"></i> YDT Sorularını Çöz
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1171,6 +1295,79 @@
         // ==========================================
         // 8. RESET CONTROLS & INITIALIZATION
         // ==========================================
+        let isCornerImgUsingFallback = false;
+
+        function handleCornerImgError() {
+            isCornerImgUsingFallback = true;
+            const imgEl = document.getElementById('hero-corner-img');
+            const svgEl = document.getElementById('hero-corner-svg');
+            if (imgEl) imgEl.classList.add('hidden');
+            if (svgEl) svgEl.classList.remove('hidden');
+        }
+
+        function triggerCornerImageUpload() {
+            const input = document.getElementById('corner-img-input');
+            if (input) input.click();
+        }
+
+        function loadLocalCornerImage(event) {
+            try {
+                const file = event.target.files && event.target.files[0];
+                if (!file) return;
+                const objectUrl = URL.createObjectURL(file);
+                const imgEl = document.getElementById('hero-corner-img');
+                const svgEl = document.getElementById('hero-corner-svg');
+
+                isCornerImgUsingFallback = false;
+                imgEl.src = objectUrl;
+                imgEl.classList.remove('hidden');
+                svgEl.classList.add('hidden');
+
+                // If modal is currently open, refresh its preview too
+                const modal = document.getElementById('image-zoom-modal');
+                if (modal && !modal.classList.contains('hidden')) {
+                    openImageModal();
+                }
+                showToast('Sunum görseli güncellendi.', 'success');
+            } catch (err) {
+                console.error('Görsel yükleme hatası:', err);
+                showToast('Görsel yüklenirken bir hata oluştu.', 'error');
+            }
+        }
+
+        function openImageModal() {
+            try {
+                const modal = document.getElementById('image-zoom-modal');
+                const host = document.getElementById('modal-image-host');
+                const imgEl = document.getElementById('hero-corner-img');
+                const svgEl = document.getElementById('hero-corner-svg');
+                if (!modal || !host) return;
+
+                host.innerHTML = '';
+                if (!isCornerImgUsingFallback && imgEl && !imgEl.classList.contains('hidden')) {
+                    const enlargedImg = document.createElement('img');
+                    enlargedImg.src = imgEl.src;
+                    enlargedImg.alt = imgEl.alt;
+                    enlargedImg.className = 'max-h-[75vh] w-auto object-contain rounded-xl';
+                    host.appendChild(enlargedImg);
+                } else if (svgEl) {
+                    const clonedSvg = svgEl.firstElementChild.cloneNode(true);
+                    clonedSvg.setAttribute('class', 'w-full max-w-2xl h-auto block');
+                    host.appendChild(clonedSvg);
+                }
+
+                modal.classList.remove('hidden');
+                lucide.createIcons();
+            } catch (err) {
+                console.error('Modal açma hatası:', err);
+            }
+        }
+
+        function closeImageModal() {
+            const modal = document.getElementById('image-zoom-modal');
+            if (modal) modal.classList.add('hidden');
+        }
+
         function resetSection(sectionKey) {
             state.answers[sectionKey] = {};
             if (sectionKey === 'drill') renderDrill();
